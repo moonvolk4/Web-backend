@@ -44,9 +44,7 @@ func StartServer() {
 	r.GET("/stage/:id", handler.GetOrder)
 	r.GET("/request", handler.GetApplication)
 
-	r.POST("/request", handler.PostApplication)
-	r.POST("/request/add", handler.AddToApplication)
-	r.POST("/request/delete", handler.DeleteApplicationEntry)
+	// Для ЛР1 разрешены только GET-запросы; POST-обработчики отключены
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 	log.Println("Server down")

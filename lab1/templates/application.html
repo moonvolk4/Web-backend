@@ -23,23 +23,19 @@
     {{ range .entries }}
     <div class="application-card" style="margin-top:16px;">
       <div class="app-controls-row">
-  {{ if .imageKey }}
-  <img src="{{ minioURL .imageKey }}" alt="{{ .title }}" style="width:56px;height:56px;object-fit:contain;display:block"/>
-  {{ else }}
-  <div style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;font-size:36px;">{{ .icon }}</div>
-  {{ end }}
-        <form class="app-controls" action="/request" method="POST">
-          <input type="hidden" name="id" value="{{ .id }}">
+        {{ if .imageKey }}
+        <img src="{{ minioURL .imageKey }}" alt="{{ .title }}" style="width:56px;height:56px;object-fit:contain;display:block"/>
+        {{ else }}
+        <div style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;font-size:36px;">{{ .icon }}</div>
+        {{ end }}
+        <div class="app-controls">
           <label style="font-weight:600;">Пациент:</label>
-          <input class="app-input" name="patient" value="" placeholder="Имя пациента">
+          <input class="app-input" value="" placeholder="Имя пациента" disabled>
           <label style="font-weight:600;">Давление:</label>
-          <input class="app-input" name="pressure" value="{{ .pressure }}" placeholder="например 140/90">
-          <button class="btn btn-primary" type="submit">Пересчитать</button>
-        </form>
-        <form class="app-controls" action="/request/delete" method="POST">
-          <input type="hidden" name="id" value="{{ .id }}">
-          <button class="btn btn-ghost" type="submit">Удалить</button>
-        </form>
+          <input class="app-input" value="{{ .pressure }}" disabled>
+          <button class="btn btn-primary" type="button" disabled title="Недоступно в ЛР1 (только GET)">Пересчитать</button>
+          <button class="btn btn-ghost" type="button" disabled title="Недоступно в ЛР1 (только GET)">Удалить</button>
+        </div>
       </div>
 
       <table class="app-table">

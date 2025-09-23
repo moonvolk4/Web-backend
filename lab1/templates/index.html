@@ -42,10 +42,7 @@
                         <p class="meta">Код: <a class="code-link" href="#">{{ .Code }}</a></p>
                         <div class="card-actions">
                             <a class="btn" href="/stage/{{ .ID }}">Подробнее</a>
-                            <form action="/request/add" method="POST" style="display:inline; margin:0;">
-                                <input type="hidden" name="id" value="{{ .ID }}">
-                                <button class="btn btn-add" type="submit">Добавить</button>
-                            </form>
+                            <button class="btn btn-add" type="button" disabled title="Недоступно в ЛР1 (только GET)">Добавить</button>
                         </div>
                     </div>
                 </article>

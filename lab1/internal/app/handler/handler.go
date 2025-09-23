@@ -22,12 +22,27 @@ func NewHandler(r *repository.Repository) *Handler {
 	}
 }
 
+func init() {
+	reqMu.Lock()
+	defer reqMu.Unlock()
+	if len(requestStore) == 0 {
+		st1, rn1, rc1 := classifyPressure("120/80")
+		requestStore[1] = &AppEntry{ID: 1, Pressure: "120/80", Stage: st1, RiskName: rn1, RiskClass: rc1}
+
+		st2, rn2, rc2 := classifyPressure("135/88")
+		requestStore[3] = &AppEntry{ID: 3, Pressure: "135/88", Stage: st2, RiskName: rn2, RiskClass: rc2}
+
+		st3, rn3, rc3 := classifyPressure("145/95")
+		requestStore[4] = &AppEntry{ID: 4, Pressure: "145/95", Stage: st3, RiskName: rn3, RiskClass: rc3}
+	}
+}
+
 func (h *Handler) GetOrders(ctx *gin.Context) {
 	var orders []repository.Order
 	var err error
 
-	searchQuery := ctx.Query("query") // получаем значение из поля поиска
-	if searchQuery == "" {            // если поле поиска пусто, то просто получаем из репозитория все записи
+	searchQuery := ctx.Query("query")
+	if searchQuery == "" {
 		orders, err = h.Repository.GetOrders()
 		if err != nil {
 			logrus.Error(err)
@@ -132,58 +147,6 @@ func (h *Handler) GetApplication(ctx *gin.Context) {
 		"appCount":     appCount,
 		"appCountText": formatAppCount(appCount),
 	})
-}
-
-// PostApplication обрабатывает форму без JS: парсит давление и вычисляет стадию/риск
-func (h *Handler) PostApplication(ctx *gin.Context) {
-	_ = ctx.PostForm("patient") // опционально
-	pressure := ctx.PostForm("pressure")
-	idStr := ctx.PostForm("id")
-	id, _ := strconv.Atoi(idStr)
-
-	if id > 0 && pressure != "" {
-		st, rn, rc := classifyPressure(pressure)
-		reqMu.Lock()
-		if e, ok := requestStore[id]; ok {
-			e.Pressure = pressure
-			e.Stage = st
-			e.RiskName = rn
-			e.RiskClass = rc
-		} else {
-			requestStore[id] = &AppEntry{ID: id, Pressure: pressure, Stage: st, RiskName: rn, RiskClass: rc}
-		}
-		reqMu.Unlock()
-	}
-	// PRG
-	ctx.Redirect(http.StatusFound, "/request")
-}
-
-// AddToApplication добавляет запись в заявку (по id услуги) и редиректит на /application
-func (h *Handler) AddToApplication(ctx *gin.Context) {
-	// добавление через POST-форму с hidden id
-	idStr := ctx.PostForm("id")
-	id, _ := strconv.Atoi(idStr)
-	ord, err := h.Repository.GetOrder(id)
-	if err != nil {
-		ctx.Redirect(http.StatusFound, "/request")
-		return
-	}
-	// создаём запись в in-memory словаре; давление из услуги (может быть скорректировано пользователем позже)
-	st, rn, rc := classifyPressure(ord.Pressure)
-	reqMu.Lock()
-	requestStore[id] = &AppEntry{ID: id, Pressure: ord.Pressure, Stage: st, RiskName: rn, RiskClass: rc}
-	reqMu.Unlock()
-	ctx.Redirect(http.StatusFound, "/request")
-}
-
-// DeleteApplicationEntry удаляет запись по индексу из cookie и редиректит на /application
-func (h *Handler) DeleteApplicationEntry(ctx *gin.Context) {
-	idStr := ctx.PostForm("id")
-	id, _ := strconv.Atoi(idStr)
-	reqMu.Lock()
-	delete(requestStore, id)
-	reqMu.Unlock()
-	ctx.Redirect(http.StatusFound, "/request")
 }
 
 // classifyPressure принимает строку давления вида "120/80" и возвращает стадию и риск
