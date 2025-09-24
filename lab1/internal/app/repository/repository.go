@@ -1,11 +1,7 @@
 package repository
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
-	"runtime"
 	"strings"
 )
 
@@ -28,42 +24,16 @@ type Order struct {
 }
 
 func (r *Repository) GetOrders() ([]Order, error) {
-	// Ищем JSON независимо от каталога запуска
-	wd, _ := os.Getwd()
-	// Путь от исходника репозитория (этот файл находится в internal/app/repository)
-	_, srcFile, _, _ := runtime.Caller(0)
-	srcBase := filepath.Dir(filepath.Dir(filepath.Dir(srcFile))) // подняться до корня проекта
 
-	candidates := []string{
-		filepath.Join(wd, "resources", "data", "orders.json"),
-		filepath.Join(wd, "..", "resources", "data", "orders.json"),
-		filepath.Join(wd, "..", "..", "resources", "data", "orders.json"),
-		filepath.Join(srcBase, "resources", "data", "orders.json"),
-	}
-
-	var dataPath string
-	for _, p := range candidates {
-		if _, err := os.Stat(p); err == nil {
-			dataPath = p
-			break
-		}
-	}
-	if dataPath == "" {
-		return nil, fmt.Errorf("не найден файл данных orders.json по путям: %v", candidates)
-	}
-
-	f, err := os.Open(dataPath)
-	if err != nil {
-		return nil, fmt.Errorf("не удалось открыть JSON с заказами: %w", err)
-	}
-	defer f.Close()
-
-	var orders []Order
-	if err := json.NewDecoder(f).Decode(&orders); err != nil {
-		return nil, fmt.Errorf("не удалось распарсить JSON: %w", err)
-	}
-	if len(orders) == 0 {
-		return nil, fmt.Errorf("массив пустой")
+	// ЛР1: данные берём из in-memory коллекции, без JSON/БД
+	orders := []Order{
+		{ID: 1, Title: "Оптимальное", Pressure: "120 / 80", RiskName: "Нулевой", RiskClass: "risk-zero", Code: "I10-1", Icon: "🧍", ImageKey: "stages/1.jpg", Description: "Оптимальные значения артериального давления соответствуют хорошему состоянию сердечно‑сосудистой системы. Рекомендуется поддерживать активный образ жизни, сбалансированное питание и контроль факторов риска."},
+		{ID: 2, Title: "Нормальное", Pressure: "120 - 129 / 80 - 84", RiskName: "Минимальный", RiskClass: "risk-low", Code: "I10-1", Icon: "➕", ImageKey: "stages/2.jpg", Description: "Нормальные значения АД. Важно сохранять здоровые привычки: достаточная физическая активность, ограничение соли, контроль массы тела и стресса."},
+		{ID: 3, Title: "Высокое", Pressure: "130 - 139 / 85 - 89", RiskName: "Незначительный", RiskClass: "risk-mid", Code: "I10-1", Icon: "❤️", ImageKey: "stages/3.jpg", Description: "Погранично высокие значения АД. Рекомендуется более строгий контроль образа жизни и наблюдение. Возможен переход к гипертензии без коррекции факторов риска."},
+		{ID: 4, Title: "АГ 1-й стадии", Pressure: "140 - 159 / 90 - 99", RiskName: "Умеренный", RiskClass: "risk-mod", Code: "I10-1", Icon: "🩺", ImageKey: "stages/4.jpg", Description: "Артериальная гипертензия 1‑й стадии. Как правило, поражения органов‑мишеней отсутствуют. Требуются меры по изменению образа жизни, возможен медикаментозный контроль согласно рекомендациям врача."},
+		{ID: 5, Title: "АГ 2-й стадии", Pressure: "160 - 179 / 100 - 109", RiskName: "Высокий", RiskClass: "risk-high", Code: "I10-1", Icon: "🫀", ImageKey: "stages/5.jpg", Description: "Артериальная гипертензия 2‑й стадии сопровождается более выраженным повышением АД и ростом сердечно‑сосудистых рисков. Необходима медикаментозная терапия и регулярный мониторинг."},
+		{ID: 6, Title: "АГ 3-й стадии", Pressure: "> 180 / > 110", RiskName: "Очень высокий", RiskClass: "risk-vhigh", Code: "I10-1", Icon: "⚠️", ImageKey: "stages/6.jpg", Description: "Тяжёлая гипертензия с очень высоким риском осложнений. Требуется интенсивная терапия и наблюдение специалиста. Высока вероятность поражения органов‑мишеней."},
+		{ID: 7, Title: "ИСАГ", Pressure: "> 180 / < 90", RiskName: "Очень высокий", RiskClass: "risk-vhigh", Code: "I10-1", Icon: "🫀", ImageKey: "stages/7.jpg", Description: "Изолированная систолическая артериальная гипертензия — значительно повышено систолическое давление при нормальном или низком диастолическом. Часто встречается у пожилых, требует подбора терапии."},
 	}
 	return orders, nil
 }

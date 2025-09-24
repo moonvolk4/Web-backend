@@ -23,7 +23,7 @@ func StartServer() {
 	handler := handler.NewHandler(repo)
 
 	r := gin.Default()
-	// Функция шаблона для построения публичного URL объекта в MinIO/NGINX
+
 	base := strings.TrimRight(getEnv("MINIO_PUBLIC_BASE", "http://localhost:9000"), "/")
 	bucket := strings.Trim(getEnv("MINIO_BUCKET", "images"), "/")
 	r.SetFuncMap(template.FuncMap{
@@ -43,8 +43,6 @@ func StartServer() {
 	r.GET("/stages", handler.GetOrders)
 	r.GET("/stage/:id", handler.GetOrder)
 	r.GET("/request", handler.GetApplication)
-
-	// Для ЛР1 разрешены только GET-запросы; POST-обработчики отключены
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 	log.Println("Server down")

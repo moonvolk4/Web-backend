@@ -87,7 +87,7 @@ func (h *Handler) GetOrder(ctx *gin.Context) {
 }
 
 func (h *Handler) GetApplication(ctx *gin.Context) {
-	// сначала читаем текущие заявки из in-memory словаря (под RLock)
+
 	type localEntry struct {
 		id        int
 		pressure  string
@@ -109,7 +109,6 @@ func (h *Handler) GetApplication(ctx *gin.Context) {
 	appCount := len(requestStore)
 	reqMu.RUnlock()
 
-	// один раз получаем все услуги и строим быстрый доступ по id
 	orders, err := h.Repository.GetOrders()
 	if err != nil {
 		logrus.Error(err)
@@ -119,7 +118,6 @@ func (h *Handler) GetApplication(ctx *gin.Context) {
 		orderMap[o.ID] = o
 	}
 
-	// формируем срез для шаблона, дополняя полями imageKey/title/icon
 	entries := []map[string]string{}
 	for _, e := range le {
 		img := ""
@@ -149,9 +147,8 @@ func (h *Handler) GetApplication(ctx *gin.Context) {
 	})
 }
 
-// classifyPressure принимает строку давления вида "120/80" и возвращает стадию и риск
 func classifyPressure(raw string) (stageTitle, riskName, riskClass string) {
-	// Ищем два числа — систолическое и диастолическое
+
 	re := regexp.MustCompile(`(?s)(\d+)\D+(\d+)`)
 	m := re.FindStringSubmatch(raw)
 	if len(m) < 3 {
@@ -160,7 +157,6 @@ func classifyPressure(raw string) (stageTitle, riskName, riskClass string) {
 	sys, _ := strconv.Atoi(m[1])
 	dia, _ := strconv.Atoi(m[2])
 
-	// Особый случай: ИСАГ — изолированная систолическая АГ
 	if sys >= 180 && dia < 90 {
 		return "ИСАГ", "Очень высокий", "risk-vhigh"
 	}
