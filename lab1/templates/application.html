@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Составление заявки</title>
-  <link rel="stylesheet" href="/resources/order_style.css">
-  <link rel="stylesheet" href="/resources/index_style.css">
+  <title>Заявка пациента</title>
+  <link rel="stylesheet" href="/resources/order_style.css?v=1">
+  <link rel="stylesheet" href="/resources/index_style.css?v=1">
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
-  <a class="logo-icon" href="/stages" aria-label="На главную">
+      <a class="logo-icon" href="/stages" aria-label="На главную">
         <img class="logo-img" src="/header_icon.png" alt="На главную" width="40" height="40" />
       </a>
       <div class="site-title">Классификатор АГ</div>
@@ -18,54 +18,87 @@
   </header>
 
   <main class="container application-wrap">
-    <h2>Составление заявки <span class="muted">{{ .appCountText }}</span></h2>
+    <h2>Заявка пациента <span class="muted">{{ .appCountText }}</span></h2>
 
-    {{ range .entries }}
-    <div class="application-card" style="margin-top:16px;">
-      <div class="app-controls-row">
-        {{ if .imageKey }}
-        <img src="{{ minioURL .imageKey }}" alt="{{ .title }}" style="width:56px;height:56px;object-fit:contain;display:block"/>
-        {{ else }}
-        <div style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;font-size:36px;">{{ .icon }}</div>
-        {{ end }}
-        <div class="app-controls">
-          <label style="font-weight:600;">Пациент:</label>
-          <input class="app-input" value="" placeholder="Имя пациента" disabled>
-          <label style="font-weight:600;">Давление:</label>
-          <input class="app-input" value="{{ .pressure }}" disabled>
-          <button class="btn btn-primary" type="button" disabled title="Недоступно в ЛР1 (только GET)">Пересчитать</button>
-          <button class="btn btn-ghost" type="button" disabled title="Недоступно в ЛР1 (только GET)">Удалить</button>
+    <!-- Сводка пациента / форма расчёта -->
+    <div class="application-card app-summary">
+      <form action="/request/1" method="GET" style="display:flex;flex-wrap:wrap;gap:24px;margin:0;padding:0;">
+        <div class="app-summary-block">
+          <div class="label">ФИО пациента</div>
+          <input name="patient" type="text" value="{{ .patientName }}" placeholder="ФИО" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;min-width:260px;" />
         </div>
-      </div>
+        <div class="app-summary-block">
+          <div class="label">Максимальное АД</div>
+          <input name="bp" type="text" placeholder="Напр. 145/95" value="{{ .bp }}" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;min-width:140px;" />
+        </div>
+        <div class="app-summary-block">
+          <div class="label">Ср. артериальное (MAP)</div>
+          {{ if .map }}
+            <div><strong>{{ .map }}</strong> мм рт.ст.</div>
+          {{ else }}
+            <div style="opacity:.7;">—</div>
+          {{ end }}
+        </div>
+        <div class="app-summary-block">
+          <div class="label">Макс. АД (GET)</div>
+          {{ if .maxInfo }}
+            <div><strong>{{ .maxInfo.pressure }}</strong> – <span class="risk {{ .maxInfo.riskClass }}">{{ .maxInfo.stage }}</span></div>
+          {{ else }}
+            <div style="opacity:.7;">Не рассчитано</div>
+          {{ end }}
+        </div>
+        <div class="app-summary-block" style="align-self:flex-end;display:flex;gap:8px;">
+          <button class="btn" type="submit" name="calc" value="1">Рассчитать</button>
+          <a class="btn" href="/request/1?max=1" style="background:#555;">Макс</a>
+        </div>
+      </form>
+    </div>
 
+    <!-- Выбранные стадии -->
+    <div class="application-card" style="margin-top:24px;">
+      <h3 style="margin:0 0 16px;">Выбранные стадии</h3>
+      <div class="stage-cards">
+        {{ range .entries }}
+        <div class="stage-card">
+          <div class="stage-card-media">
+            {{ if .imageKey }}
+            <img src="{{ minioURL .imageKey }}" alt="{{ .title }}" style="max-width:100%;max-height:100%;object-fit:contain;display:block"/>
+            {{ else }}
+            <div style="font-size:56px;">{{ .icon }}</div>
+            {{ end }}
+          </div>
+          <div class="stage-card-body">
+            <div class="stage-card-title risk {{ .riskClass }}">{{ .title }}</div>
+            <div style="font-size:14px;opacity:.85;">Давление: {{ .pressure }}</div>
+          </div>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+
+    <!-- Осложнения: авто (нельзя менять) + возможность отметить дополнительные (extra[]) -->
+    <div class="application-card" style="margin-top:24px;">
+      <h3 style="margin:0 0 16px;">Осложнения</h3>
       <table class="app-table">
         <thead>
-          <tr><th>Критерий</th><th>Наличие</th><th>Комментарий</th></tr>
+          <tr><th style="width:380px;">Название</th><th>Отметка</th></tr>
         </thead>
         <tbody>
+          {{ range .complications }}
           <tr>
-            <td>Стадия артериальной гипертензии: {{ .stage }}</td>
-            <td><input type="checkbox" checked></td>
+            <td>{{ .title }}</td>
             <td>
-              <div class="app-static">Определяется автоматически по введённому давлению. Редактирование недоступно.</div>
+              {{ if .auto }}
+                <input type="checkbox" checked disabled title="Авто" />
+              {{ else }}
+                <input type="checkbox" name="extra" value="{{ .title }}" {{ if .checked }}checked{{ end }} />
+              {{ end }}
             </td>
           </tr>
-          <tr>
-            <td>Сердечно‑сосудистый риск: <span class="risk {{ .riskClass }}">{{ .riskName }}</span></td>
-            <td><input type="checkbox" checked></td>
-            <td>
-              <div class="app-static">Формируется автоматически на основе стадии и диапазонов риска.</div>
-            </td>
-          </tr>
-          <tr><td>Гипертрофия левого желудочка</td><td><input type="checkbox"></td><td><textarea class="app-textarea" name="comment_lvh" placeholder="Введите комментарий..."></textarea></td></tr>
-          <tr><td>ХБП (СКФ &lt; 60 мл/мин/1.73м2)</td><td><input type="checkbox"></td><td><textarea class="app-textarea" name="comment_ckd" placeholder="Введите комментарий..."></textarea></td></tr>
-          <tr><td>Сахарный диабет</td><td><input type="checkbox"></td><td><textarea class="app-textarea" name="comment_dm" placeholder="Введите комментарий..."></textarea></td></tr>
-          <tr><td>Атеросклеротические заболевания</td><td><input type="checkbox"></td><td><textarea class="app-textarea" name="comment_ascvd" placeholder="Введите комментарий..."></textarea></td></tr>
-          <tr><td>Курение</td><td><input type="checkbox"></td><td><textarea class="app-textarea" name="comment_smoke" placeholder="Введите комментарий..."></textarea></td></tr>
+          {{ end }}
         </tbody>
       </table>
     </div>
-    {{ end }}
   </main>
 </body>
 </html>

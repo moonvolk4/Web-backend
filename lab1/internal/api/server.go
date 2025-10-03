@@ -42,7 +42,9 @@ func StartServer() {
 
 	r.GET("/stages", handler.GetOrders)
 	r.GET("/stage/:id", handler.GetOrder)
+	// Корзина-заявка: поддерживаем и /request, и /request/:id
 	r.GET("/request", handler.GetApplication)
+	r.GET("/request/:id", handler.GetApplication)
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 	log.Println("Server down")

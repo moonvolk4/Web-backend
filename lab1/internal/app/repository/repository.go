@@ -5,66 +5,133 @@ import (
 	"strings"
 )
 
+// Repository инкапсулирует доступ к данным. Для ЛР1 данные — статичный срез в памяти.
 type Repository struct{}
 
-func NewRepository() (*Repository, error) {
-	return &Repository{}, nil
+func NewRepository() (*Repository, error) { return &Repository{}, nil }
+
+// Order описывает «услугу/стадию» гипертонии, отображаемую на всех трёх страницах.
+// Поля экспортируются (с заглавной буквы), чтобы шаблоны могли их читать.
+type Order struct {
+	ID          int
+	Title       string
+	Pressure    string // репрезентативный диапазон / пример АД для стадии
+	RiskName    string // человеко‑читаемое название риска
+	RiskClass   string // CSS‑класс для раскраски (risk-low, risk-mid, ...)
+	Code        string // условный код (ICD / внутренний)
+	Icon        string // запасной emoji, если нет картинки
+	ImageKey    string // ключ объекта в MinIO (путь внутри bucket)
+	Description string
 }
 
-type Order struct {
-	ID          int    `json:"id"`
-	Title       string `json:"title"`
-	Pressure    string `json:"pressure"`
-	RiskName    string `json:"riskName"`
-	RiskClass   string `json:"riskClass"`
-	Code        string `json:"code"`
-	Icon        string `json:"icon"`
-	ImageKey    string `json:"imageKey"`
-	Description string `json:"description"`
+// seedOrders — единый источник данных. Картинки предполагаются по пути stages/N.jpg в бакете.
+// Набор покрывает все градации, которые использует classifyPressure.
+var seedOrders = []Order{
+	{
+		ID:          1,
+		Title:       "Оптимальное АД",
+		Pressure:    "115/75",
+		RiskName:    "Нулевой",
+		RiskClass:   "risk-zero",
+		Code:        "I10.0",
+		Icon:        "✅",
+		ImageKey:    "stages/1.jpg",
+		Description: "Оптимальные значения артериального давления (<120/<80 мм рт. ст.) без признаков сердечно‑сосудистого риска.",
+	},
+	{
+		ID:          2,
+		Title:       "Нормальное АД",
+		Pressure:    "125/82",
+		RiskName:    "Минимальный",
+		RiskClass:   "risk-low",
+		Code:        "I10.1",
+		Icon:        "🟢",
+		ImageKey:    "stages/2.jpg",
+		Description: "Нормальные значения (120–129 / 80–84). Рекомендуется поддержание образа жизни и наблюдение.",
+	},
+	{
+		ID:          3,
+		Title:       "Высокое нормальное",
+		Pressure:    "135/88",
+		RiskName:    "Незначительный",
+		RiskClass:   "risk-mid",
+		Code:        "I10.2",
+		Icon:        "🟡",
+		ImageKey:    "stages/3.jpg",
+		Description: "Пограничные значения (130–139 / 85–89). Требует модификации образа жизни и динамического контроля.",
+	},
+	{
+		ID:          4,
+		Title:       "АГ 1-й стадии",
+		Pressure:    "145/95",
+		RiskName:    "Умеренный",
+		RiskClass:   "risk-mod",
+		Code:        "I10.3",
+		Icon:        "⚠️",
+		ImageKey:    "stages/4.jpg",
+		Description: "Артериальная гипертензия первой стадии (140–159 / 90–99). Начальный уровень повышения давления.",
+	},
+	{
+		ID:          5,
+		Title:       "АГ 2-й стадии",
+		Pressure:    "165/105",
+		RiskName:    "Высокий",
+		RiskClass:   "risk-high",
+		Code:        "I10.4",
+		Icon:        "⚠️",
+		ImageKey:    "stages/5.jpg",
+		Description: "Артериальная гипертензия второй стадии (160–179 / 100–109). Существенно повышенный риск осложнений.",
+	},
+	{
+		ID:          6,
+		Title:       "АГ 3-й стадии",
+		Pressure:    "185/115",
+		RiskName:    "Очень высокий",
+		RiskClass:   "risk-vhigh",
+		Code:        "I10.5",
+		Icon:        "❗",
+		ImageKey:    "stages/6.jpg",
+		Description: "Тяжёлая гипертензия (≥180 / ≥110). Требует незамедлительной коррекции терапии и наблюдения.",
+	},
+	{
+		ID:          7,
+		Title:       "ИСАГ",
+		Pressure:    "180/85",
+		RiskName:    "Очень высокий",
+		RiskClass:   "risk-vhigh",
+		Code:        "I10.6",
+		Icon:        "❗",
+		ImageKey:    "stages/7.jpg",
+		Description: "Изолированная систолическая артериальная гипертензия (≥180 при диастолическом <90). Часто у пожилых пациентов.",
+	},
 }
 
 func (r *Repository) GetOrders() ([]Order, error) {
-
-	// ЛР1: данные берём из in-memory коллекции, без JSON/БД
-	orders := []Order{
-		{ID: 1, Title: "Оптимальное", Pressure: "120 / 80", RiskName: "Нулевой", RiskClass: "risk-zero", Code: "I10-1", Icon: "🧍", ImageKey: "stages/1.jpg", Description: "Оптимальные значения артериального давления соответствуют хорошему состоянию сердечно‑сосудистой системы. Рекомендуется поддерживать активный образ жизни, сбалансированное питание и контроль факторов риска."},
-		{ID: 2, Title: "Нормальное", Pressure: "120 - 129 / 80 - 84", RiskName: "Минимальный", RiskClass: "risk-low", Code: "I10-1", Icon: "➕", ImageKey: "stages/2.jpg", Description: "Нормальные значения АД. Важно сохранять здоровые привычки: достаточная физическая активность, ограничение соли, контроль массы тела и стресса."},
-		{ID: 3, Title: "Высокое", Pressure: "130 - 139 / 85 - 89", RiskName: "Незначительный", RiskClass: "risk-mid", Code: "I10-1", Icon: "❤️", ImageKey: "stages/3.jpg", Description: "Погранично высокие значения АД. Рекомендуется более строгий контроль образа жизни и наблюдение. Возможен переход к гипертензии без коррекции факторов риска."},
-		{ID: 4, Title: "АГ 1-й стадии", Pressure: "140 - 159 / 90 - 99", RiskName: "Умеренный", RiskClass: "risk-mod", Code: "I10-1", Icon: "🩺", ImageKey: "stages/4.jpg", Description: "Артериальная гипертензия 1‑й стадии. Как правило, поражения органов‑мишеней отсутствуют. Требуются меры по изменению образа жизни, возможен медикаментозный контроль согласно рекомендациям врача."},
-		{ID: 5, Title: "АГ 2-й стадии", Pressure: "160 - 179 / 100 - 109", RiskName: "Высокий", RiskClass: "risk-high", Code: "I10-1", Icon: "🫀", ImageKey: "stages/5.jpg", Description: "Артериальная гипертензия 2‑й стадии сопровождается более выраженным повышением АД и ростом сердечно‑сосудистых рисков. Необходима медикаментозная терапия и регулярный мониторинг."},
-		{ID: 6, Title: "АГ 3-й стадии", Pressure: "> 180 / > 110", RiskName: "Очень высокий", RiskClass: "risk-vhigh", Code: "I10-1", Icon: "⚠️", ImageKey: "stages/6.jpg", Description: "Тяжёлая гипертензия с очень высоким риском осложнений. Требуется интенсивная терапия и наблюдение специалиста. Высока вероятность поражения органов‑мишеней."},
-		{ID: 7, Title: "ИСАГ", Pressure: "> 180 / < 90", RiskName: "Очень высокий", RiskClass: "risk-vhigh", Code: "I10-1", Icon: "🫀", ImageKey: "stages/7.jpg", Description: "Изолированная систолическая артериальная гипертензия — значительно повышено систолическое давление при нормальном или низком диастолическом. Часто встречается у пожилых, требует подбора терапии."},
+	if len(seedOrders) == 0 {
+		return nil, fmt.Errorf("dataset empty")
 	}
-	return orders, nil
+	return seedOrders, nil
 }
 
 func (r *Repository) GetOrder(id int) (Order, error) {
-	// тут у вас будет логика получения нужной услуги, тоже наверное через цикл в первой лабе, и через запрос к БД начиная со второй
-	orders, err := r.GetOrders()
-	if err != nil {
-		return Order{}, err // тут у нас уже есть кастомная ошибка из нашего метода, поэтому мы можем просто вернуть ее
-	}
-
-	for _, order := range orders {
-		if order.ID == id {
-			return order, nil // если нашли, то просто возвращаем найденный заказ (услугу) без ошибок
+	for _, o := range seedOrders {
+		if o.ID == id {
+			return o, nil
 		}
 	}
-	return Order{}, fmt.Errorf("заказ не найден") // тут нужна кастомная ошибка, чтобы понимать на каком этапе возникла ошибка и что произошло
+	return Order{}, fmt.Errorf("order %d not found", id)
 }
 
 func (r *Repository) GetOrdersByTitle(title string) ([]Order, error) {
-	orders, err := r.GetOrders()
-	if err != nil {
-		return []Order{}, err
+	if title == "" {
+		return r.GetOrders()
 	}
-
-	var result []Order
-	for _, order := range orders {
-		if strings.Contains(strings.ToLower(order.Title), strings.ToLower(title)) {
-			result = append(result, order)
+	low := strings.ToLower(title)
+	res := []Order{}
+	for _, o := range seedOrders {
+		if strings.Contains(strings.ToLower(o.Title), low) {
+			res = append(res, o)
 		}
 	}
-
-	return result, nil
+	return res, nil
 }

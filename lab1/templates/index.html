@@ -18,10 +18,10 @@
 
         <div class="container actions">
             <form class="search" action="/stages" method="GET">
-                <input class="search-input" type="text" name="query" placeholder="Найти по стадиям" value="{{ .query }}">
+                <input class="search-input" type="text" name="stage" placeholder="Найти по стадиям" value="{{ .query }}">
                 <button class="search-btn" type="submit">Найти</button>
             </form>
-            <a class="my-app" href="/request">📁 Моя заявка ({{ .appCount }})</a>
+            <a class="my-app" href="/request/1">📁 Моя заявка ({{ .appCount }})</a>
         </div>
 
         <main class="container">
@@ -36,22 +36,17 @@
                         {{ end }}
                     </div>
                     <div class="card-body">
-                        <h3 class="card-title">{{ .Title }}</h3>
+                        <h3 class="card-title"><span class="risk {{ .RiskClass }}" style="font:inherit;">{{ .Title }}</span></h3>
                         <p class="meta"><span>Давление:</span> {{ .Pressure }}</p>
                         <p class="meta">Риск: <span class="risk {{ .RiskClass }}">{{ .RiskName }}</span></p>
                         <p class="meta">Код: <a class="code-link" href="#">{{ .Code }}</a></p>
                         <div class="card-actions">
                             <a class="btn" href="/stage/{{ .ID }}">Подробнее</a>
-                            <button class="btn btn-add" type="button" disabled title="Недоступно в ЛР1 (только GET)">Добавить</button>
                         </div>
                     </div>
                 </article>
                 {{ end }}
             </section>
         </main>
-
-        <footer class="site-footer">
-            <div class="container">© 2025</div>
-        </footer>
     </body>
 </html>
