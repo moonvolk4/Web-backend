@@ -1,0 +1,371 @@
+:root {
+	--bg: #f7f8fb;
+	--surface: #fff;
+	--accent: #00a1f0;
+	--muted: #6b7280;
+	--danger: #fb923c;
+	--radius: 16px;
+	--shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	height: 100%;
+}
+
+body {
+	margin: 0;
+	font-family: Inter, Arial, sans-serif;
+	background: var(--bg);
+	color: #0b1220;
+}
+
+.container {
+	max-width: 1180px;
+	margin: 0 auto;
+	padding: 20px;
+}
+
+/* Order card */
+.order-wrap {
+	padding: 24px 0;
+}
+
+.order-card {
+	display: flex;
+	gap: 20px;
+	background: var(--surface);
+	border-radius: 18px;
+	box-shadow: var(--shadow);
+	overflow: hidden;
+}
+
+.order-left {
+	flex: 0 0 320px;
+	background: rgba(241, 240, 255, 0.7);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 36px;
+}
+
+.order-icon {
+	font-size: 140px;
+}
+
+.order-right {
+	flex: 1;
+	padding: 28px;
+}
+
+.order-title {
+	margin: 0;
+	font-size: 32px;
+}
+
+.order-meta {
+	color: var(--muted);
+	margin: 10px 0;
+	font-size: 18px;
+}
+
+.risk {
+	color: var(--danger);
+	font-weight: 700;
+}
+
+.order-desc {
+	margin-top: 26px;
+	background: var(--surface);
+	padding: 26px;
+	border-radius: 12px;
+	box-shadow: 0 6px 18px rgba(16, 24, 40, 0.04);
+}
+
+/* Application */
+.application-wrap h2 {
+	margin: 12px 0;
+}
+
+.application-wrap .muted {
+	color: #BBBAB8;
+}
+
+.application-card {
+	background: var(--surface);
+	padding: 18px;
+	border-radius: 14px;
+	box-shadow: var(--shadow);
+}
+
+.application-card + .application-card {
+	margin-top: 20px;
+}
+
+/* ==== Application refined components ==== */
+.app-summary {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 32px;
+}
+.app-summary-block {
+	flex: 1 1 200px;
+	min-width: 180px;
+}
+.app-summary-block .label {
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+.stage-cards {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 18px;
+}
+.stage-card {
+	flex: 1 1 300px;
+	max-width: 340px;
+	background: var(--surface);
+	border: 1px solid #e3e6ea;
+	border-radius: 16px;
+	box-shadow: 0 8px 20px rgba(16, 24, 40, 0.06);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+.stage-card-media {
+	height: 140px;
+	background: #f5f7f9;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 12px;
+}
+.stage-card-body {
+	padding: 12px 14px 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.stage-card-title {
+	font-size: 17px;
+	font-weight: 600;
+	line-height: 1.2;
+	margin: 0;
+}
+@media (max-width: 880px) {
+	.stage-card { flex: 1 1 260px; }
+}
+@media (max-width: 620px) {
+	.stage-card { flex: 1 1 100%; max-width: 100%; }
+}
+
+.app-controls {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	padding: 8px;
+	flex-wrap: wrap;
+}
+
+.app-controls-row {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+}
+
+.app-input {
+	padding: 12px 18px;
+	border-radius: 28px;
+	border: 2px solid rgba(0, 162, 240, 0.2);
+	min-width: 220px;
+}
+
+.app-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 14px;
+}
+
+.app-table th {
+	padding: 12px 10px;
+	text-align: left;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	font-size: 18px;
+}
+
+.app-table td {
+	padding: 14px 10px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+	font-size: 18px;
+}
+
+.app-static {
+	padding: 10px 12px;
+	background: rgba(0, 0, 0, 0.03);
+	border: 1px dashed rgba(0, 0, 0, 0.12);
+	border-radius: 10px;
+	color: #374151;
+}
+
+.app-textarea {
+	width: 100%;
+	max-width: 720px;
+	min-height: 72px;
+	padding: 10px 14px;
+	border-radius: 12px;
+	border: 2px solid rgba(0, 162, 240, 0.2);
+	resize: vertical;
+}
+
+/* ===== Application page segmented cards ===== */
+.app-section {
+	background: var(--surface);
+	border-radius: 18px;
+	box-shadow: var(--shadow);
+	padding: 20px 22px 24px;
+	margin-bottom: 28px;
+	position: relative;
+}
+
+.app-summary-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 28px;
+	align-items: flex-start;
+}
+
+.app-summary-block {
+	flex: 1 1 220px;
+	min-width: 200px;
+}
+
+.app-summary-block h4 {
+	margin: 0 0 6px;
+	font-size: 14px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .5px;
+	color: var(--muted);
+}
+
+.app-summary-accent {
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.app-summary-action {
+	align-self: flex-end;
+}
+
+.stage-cards {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 18px;
+	margin: 4px 0 4px;
+}
+
+.stage-card {
+	flex: 1 1 300px;
+	max-width: 360px;
+	background: var(--surface);
+	border: 1px solid #e3e6ea;
+	border-radius: 18px;
+	box-shadow: var(--shadow);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	position: relative;
+	transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.stage-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 14px 34px rgba(16,24,40,0.11);
+}
+
+.stage-card-media {
+	position: relative;
+	width: 100%;
+	height: 140px;
+	background: #f5f7f9;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px;
+}
+
+.stage-card-body {
+	padding: 14px 16px 18px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.stage-card-title {
+	font-size: 17px;
+	font-weight: 600;
+	line-height: 1.2;
+	margin: 0;
+}
+
+.app-factors-table-wrapper {
+	margin-top: 8px;
+	overflow-x: auto;
+}
+
+.app-section-title {
+	margin: 0 0 14px;
+	font-size: 20px;
+	font-weight: 600;
+}
+
+@media (max-width: 860px) {
+	.stage-card { flex: 1 1 260px; }
+}
+
+@media (max-width: 620px) {
+	.app-summary-grid { gap: 18px; }
+	.stage-card { flex: 1 1 100%; max-width: 100%; }
+}
+
+.app-submit {
+	display: flex;
+	justify-content: flex-end;
+	padding: 12px;
+}
+
+.btn {
+	display: inline-block;
+	padding: 8px 12px;
+	border-radius: 8px;
+	border: 2px solid var(--accent);
+	color: var(--accent);
+	text-decoration: none;
+}
+
+.btn-primary {
+	background: var(--accent);
+	color: #fff;
+	border-color: rgba(0, 162, 240, 0.9);
+}
+
+.btn-ghost {
+	background: #fff;
+	border: 2px solid rgba(0, 162, 240, 0.75);
+}
+
+@media (max-width: 900px) {
+	.order-card {
+		flex-direction: column;
+	}
+
+	.order-left {
+		flex: 0 0 auto;
+	}
+}
