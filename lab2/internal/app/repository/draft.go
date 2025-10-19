@@ -60,7 +60,7 @@ func (r *Repository) GetDraftOrders(creatorID int) ([]Order, uint, error) {
 
 	var orders []Order
 	q := r.db.Table("records_stages ao").
-		Select("o.id, o.title, o.pressure, o.risk_name, o.risk_class, o.code, o.icon, o.image_key, o.description").
+		Select("o.id, o.title, o.pressure, o.risk_name, o.risk_class, o.code, o.icon, o.image_key, o.description, ao.quantity, ao.doctor_comment").
 		Joins("JOIN stages o ON o.id = ao.order_id").
 		Where("ao.application_id = ?", app.ID).
 		Order("o.id")
@@ -113,7 +113,7 @@ func (r *Repository) GetRequest(id int) (*Application, error) {
 func (r *Repository) GetRequestOrders(requestID int) ([]Order, error) {
 	var orders []Order
 	q := r.db.Table("records_stages ao").
-		Select("o.id, o.title, o.pressure, o.risk_name, o.risk_class, o.code, o.icon, o.image_key, o.description").
+		Select("o.id, o.title, o.pressure, o.risk_name, o.risk_class, o.code, o.icon, o.image_key, o.description, ao.quantity, ao.doctor_comment").
 		Joins("JOIN stages o ON o.id = ao.order_id").
 		Where("ao.application_id = ?", requestID).
 		Order("o.id")

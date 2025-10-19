@@ -30,7 +30,6 @@ func NewRepository(dsn string) (*Repository, error) {
 	return &Repository{db: db}, nil
 }
 
-// Order описывает «услугу/стадию». Теги соответствуют колонкам в БД.
 type Order struct {
 	ID          int    `gorm:"column:id;primaryKey"`
 	Title       string `gorm:"column:title"`
@@ -41,6 +40,13 @@ type Order struct {
 	Icon        string `gorm:"column:icon"`
 	ImageKey    string `gorm:"column:image_key"`
 	Description string `gorm:"column:description"`
+	SysFrom     int    `gorm:"column:sys_from"`
+	SysTo       int    `gorm:"column:sys_to"`
+	DiaFrom     int    `gorm:"column:dia_from"`
+	DiaTo       int    `gorm:"column:dia_to"`
+	// m:n payload from records_stages
+	Quantity      int    `gorm:"column:quantity"`
+	DoctorComment string `gorm:"column:doctor_comment"`
 }
 
 func (Order) TableName() string { return "stages" }

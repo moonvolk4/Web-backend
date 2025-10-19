@@ -122,7 +122,7 @@ func (h *Handler) GetApplication(ctx *gin.Context) {
 			h.errorHandler(ctx, http.StatusInternalServerError, err)
 			return
 		}
-		h.renderApplication(ctx, orders, int(app.ID))
+		h.renderApplication(ctx, app, orders, int(app.ID))
 		return
 	}
 	creatorID := 1
@@ -131,10 +131,16 @@ func (h *Handler) GetApplication(ctx *gin.Context) {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
 		return
 	}
-	h.renderApplication(ctx, orders, int(draftID))
+	var app *repository.Application
+	if draftID != 0 {
+		if a, err := h.Repository.GetRequest(int(draftID)); err == nil {
+			app = a
+		}
+	}
+	h.renderApplication(ctx, app, orders, int(draftID))
 }
 
-func (h *Handler) renderApplication(ctx *gin.Context, orders []repository.Order, requestID int) {
+func (h *Handler) renderApplication(ctx *gin.Context, app *repository.Application, orders []repository.Order, requestID int) {
 	entries := []map[string]string{}
 	for _, o := range orders {
 		entries = append(entries, map[string]string{
@@ -146,6 +152,7 @@ func (h *Handler) renderApplication(ctx *gin.Context, orders []repository.Order,
 			"stage":     o.Title,
 			"riskName":  o.RiskName,
 			"riskClass": o.RiskClass,
+			"quantity":  strconv.Itoa(o.Quantity),
 		})
 	}
 
@@ -211,16 +218,33 @@ func (h *Handler) renderApplication(ctx *gin.Context, orders []repository.Order,
 	bpRaw := ctx.Query("bp")
 
 	appCount := len(entries)
+	// flags from application (if loaded)
+	flags := map[string]bool{
+		"lv_h":      false,
+		"renal":     false,
+		"stiffness": false,
+	}
+	if app != nil {
+		flags["lv_h"] = app.FlagLvHypertrophy
+		flags["renal"] = app.FlagRenalDamage
+		flags["stiffness"] = app.FlagArterialStiff
+	}
 	ctx.HTML(http.StatusOK, "application.html", gin.H{
-		"time":          time.Now().Format("15:04:05"),
-		"entries":       entries,
-		"appCount":      appCount,
-		"appCountText":  formatServiceCount(appCount),
-		"maxInfo":       maxInfo,
-		"complications": compList,
-		"patientName":   patientName,
-		"bp":            bpRaw,
-		"draftID":       requestID,
+		"time":         time.Now().Format("15:04:05"),
+		"entries":      entries,
+		"appCount":     appCount,
+		"appCountText": formatServiceCount(appCount),
+		"maxInfo":      maxInfo,
+		"patientName":  patientName,
+		"bp":           bpRaw,
+		"draftID":      requestID,
+		"flags":        flags,
+		"appComment": func() string {
+			if app != nil {
+				return app.Comment
+			}
+			return ""
+		}(),
 	})
 }
 

@@ -28,9 +28,21 @@
     <div class="muted" style="margin:8px 0 16px;">Текущая заявка отсутствует</div>
     {{ end }}
 
-    <!-- Сводка пациента / форма расчёта -->
+    <!-- Флажки (сверху) + Сводка пациента / форма расчёта -->
     <div class="application-card app-summary">
-  <form action="{{ if .draftID }}/record/{{ .draftID }}{{ else }}/record{{ end }}" method="GET" style="display:flex;flex-wrap:wrap;gap:24px;margin:0;padding:0;">
+  <form action="{{ if .draftID }}/record/{{ .draftID }}{{ else }}/record{{ end }}" method="GET" style="display:flex;flex-wrap:wrap;gap:24px;margin:0;padding:0;align-items:flex-end;">
+        <div class="app-summary-block" style="flex:1 1 100%;">
+          <div class="label">Факторы/флажки</div>
+          <label style="margin-right:16px;display:inline-flex;align-items:center;gap:6px;">
+            <input type="checkbox" disabled {{ if .flags.lv_h }}checked{{ end }} /> Гипертрофия ЛЖ
+          </label>
+          <label style="margin-right:16px;display:inline-flex;align-items:center;gap:6px;">
+            <input type="checkbox" disabled {{ if .flags.renal }}checked{{ end }} /> Почечное поражение
+          </label>
+          <label style="display:inline-flex;align-items:center;gap:6px;">
+            <input type="checkbox" disabled {{ if .flags.stiffness }}checked{{ end }} /> Жёсткость артерий
+          </label>
+        </div>
         <div class="app-summary-block">
           <div class="label">ФИО пациента</div>
           <input name="patient" type="text" value="{{ .patientName }}" placeholder="ФИО" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;min-width:260px;" />
@@ -55,50 +67,43 @@
       </form>
     </div>
 
-    <!-- Выбранные стадии -->
+    <!-- Выбранные стадии: горизонтальный список как таблица без границ -->
     <div class="application-card" style="margin-top:24px;">
-      <h3 style="margin:0 0 16px;">Выбранные стадии</h3>
-      <div class="stage-cards">
+      <h3 style="margin:0 0 12px;">Выбранные стадии</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:grid;grid-template-columns: 64px 1fr 140px 90px;gap:12px;padding:6px 4px;color:#6b7280;font-weight:600;">
+          <div>Иконка</div>
+          <div>Название</div>
+          <div>Давление</div>
+          <div>Кол-во</div>
+        </div>
         {{ range .entries }}
-        <div class="stage-card">
-          <div class="stage-card-media">
+        <div style="display:grid;grid-template-columns: 64px 1fr 140px 90px;gap:12px;align-items:center;padding:8px 4px;">
+          <div>
             {{ if .imageKey }}
-            <img src="{{ minioURL .imageKey }}" alt="{{ .title }}" style="max-width:100%;max-height:100%;object-fit:contain;display:block"/>
+              <img src="{{ minioURL .imageKey }}" alt="{{ .title }}" style="width:56px;height:56px;object-fit:contain;display:block" />
             {{ else }}
-            <div style="font-size:56px;">{{ .icon }}</div>
+              <div style="font-size:40px;line-height:1;">{{ .icon }}</div>
             {{ end }}
           </div>
-          <div class="stage-card-body">
-            <div class="stage-card-title risk {{ .riskClass }}">{{ .title }}</div>
-            <div style="font-size:14px;opacity:.85;">Давление: {{ .pressure }}</div>
-          </div>
+          <div class="risk {{ .riskClass }}">{{ .title }}</div>
+          <div>{{ .pressure }}</div>
+          <div>{{ if .quantity }}{{ .quantity }}{{ else }}1{{ end }}</div>
         </div>
         {{ end }}
       </div>
     </div>
 
-    <!-- Осложнения: авто (нельзя менять) + возможность отметить дополнительные (extra[]) -->
+    <!-- Общий комментарий к заявке -->
     <div class="application-card" style="margin-top:24px;">
-      <h3 style="margin:0 0 16px;">Осложнения</h3>
-      <table class="app-table">
-        <thead>
-          <tr><th style="width:380px;">Название</th><th>Отметка</th></tr>
-        </thead>
-        <tbody>
-          {{ range .complications }}
-          <tr>
-            <td>{{ .title }}</td>
-            <td>
-              {{ if .auto }}
-                <input type="checkbox" checked disabled title="Авто" />
-              {{ else }}
-                <input type="checkbox" name="extra" value="{{ .title }}" {{ if .checked }}checked{{ end }} />
-              {{ end }}
-            </td>
-          </tr>
-          {{ end }}
-        </tbody>
-      </table>
+      <h3 style="margin:0 0 12px;">Комментарий к заявке</h3>
+      <div>
+        {{ if .appComment }}
+          <div class="app-static">{{ .appComment }}</div>
+        {{ else }}
+          <div class="muted">Комментарий отсутствует.</div>
+        {{ end }}
+      </div>
     </div>
   </main>
 </body>
