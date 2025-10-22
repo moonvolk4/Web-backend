@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Заявка пациента</title>
+  <link rel="stylesheet" href="/resources/order_style.css?v=1">
+  <link rel="stylesheet" href="/resources/index_style.css?v=1">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo-icon" href="/stages" aria-label="На главную">
+        <img class="logo-img" src="/header_icon.png" alt="На главную" width="40" height="40" />
+      </a>
+      <div class="site-title">Классификатор АГ</div>
+    </div>
+  </header>
+
+  <main class="container application-wrap">
+    <h2>Заявка пациента <span class="muted">{{ .appCountText }}</span></h2>
+    {{ if .draftID }}
+    <form action="/draft/delete" method="POST" style="margin:8px 0 16px;">
+      <input type="hidden" name="request_id" value="{{ .draftID }}" />
+      <button class="btn" type="submit" style="background:#b33;">Удалить заявку</button>
+    </form>
+    {{ else }}
+    <div class="muted" style="margin:8px 0 16px;">Текущая заявка отсутствует</div>
+    {{ end }}
+
+    <!-- Флажки (сверху) + Сводка пациента / форма расчёта -->
+    <div class="application-card app-summary">
+  <form action="{{ if .draftID }}/record/{{ .draftID }}{{ else }}/record{{ end }}" method="GET" style="display:flex;flex-wrap:wrap;gap:24px;margin:0;padding:0;align-items:flex-end;">
+        <div class="app-summary-block" style="flex:1 1 100%;">
+          <div class="label">Факторы/флажки</div>
+          <label style="margin-right:16px;display:inline-flex;align-items:center;gap:6px;">
+            <input type="checkbox" disabled {{ if .flags.lv_h }}checked{{ end }} /> Гипертрофия ЛЖ
+          </label>
+          <label style="margin-right:16px;display:inline-flex;align-items:center;gap:6px;">
+            <input type="checkbox" disabled {{ if .flags.renal }}checked{{ end }} /> Почечное поражение
+          </label>
+          <label style="display:inline-flex;align-items:center;gap:6px;">
+            <input type="checkbox" disabled {{ if .flags.stiffness }}checked{{ end }} /> Жёсткость артерий
+          </label>
+        </div>
+        <div class="app-summary-block">
+          <div class="label">ФИО пациента</div>
+          <input name="patient" type="text" value="{{ .patientName }}" placeholder="ФИО" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;min-width:260px;" />
+        </div>
+        <div class="app-summary-block">
+          <div class="label">Максимальное АД</div>
+          <input name="bp" type="text" placeholder="Напр. 145/95" value="{{ .bp }}" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;min-width:140px;" />
+        </div>
+        <div class="app-summary-block">
+          <div class="label">Ср. артериальное (MAP)</div>
+          {{ if .map }}
+            <div><strong>{{ .map }}</strong> мм рт.ст.</div>
+          {{ else }}
+            <div style="opacity:.7;">—</div>
+          {{ end }}
+        </div>
+        <div class="app-summary-block" style="align-self:flex-end;display:flex;gap:8px;">
+          <button class="btn" type="submit" name="calc" value="1">Рассчитать</button>
+        </div>
+        
+        
+      </form>
+    </div>
+
+    <!-- Выбранные стадии: горизонтальный список как таблица без границ -->
+    <div class="application-card" style="margin-top:24px;">
+      <h3 style="margin:0 0 12px;">Выбранные стадии</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:grid;grid-template-columns: 64px 1fr 140px 90px;gap:12px;padding:6px 4px;color:#6b7280;font-weight:600;">
+          <div>Иконка</div>
+          <div>Название</div>
+          <div>Давление</div>
+          <div>Кол-во</div>
+        </div>
+        {{ range .entries }}
+        <div style="display:grid;grid-template-columns: 64px 1fr 140px 90px;gap:12px;align-items:center;padding:8px 4px;">
+          <div>
+            {{ if .imageKey }}
+              <img src="{{ minioURL .imageKey }}" alt="{{ .title }}" style="width:56px;height:56px;object-fit:contain;display:block" />
+            {{ else }}
+              <div style="font-size:40px;line-height:1;">{{ .icon }}</div>
+            {{ end }}
+          </div>
+          <div class="risk {{ .riskClass }}">{{ .title }}</div>
+          <div>{{ .pressure }}</div>
+          <div>{{ if .quantity }}{{ .quantity }}{{ else }}1{{ end }}</div>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+
+    <!-- Общий комментарий к заявке -->
+    <div class="application-card" style="margin-top:24px;">
+      <h3 style="margin:0 0 12px;">Комментарий к заявке</h3>
+      <div>
+        {{ if .appComment }}
+          <div class="app-static">{{ .appComment }}</div>
+        {{ else }}
+          <div class="muted">Комментарий отсутствует.</div>
+        {{ end }}
+      </div>
+    </div>
+  </main>
+</body>
+</html>
