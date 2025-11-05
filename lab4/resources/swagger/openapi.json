@@ -1,0 +1,108 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Lab API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/stages": {
+      "get": {
+        "summary": "List stages",
+        "responses": {"200": {"description": "OK"}}
+      },
+      "post": {
+        "summary": "Create stage (moderator)",
+        "responses": {"201": {"description": "Created"}}
+      }
+    },
+    "/api/users/login": {
+      "post": {
+        "summary": "Login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {"type": "string"},
+                  "login": {"type": "string"},
+                  "password": {"type": "string"}
+                },
+                "required": ["password"],
+                "anyOf": [
+                  {"required": ["username", "password"]},
+                  {"required": ["login", "password"]}
+                ]
+              },
+              "examples": {
+                "byUsername": {"value": {"username": "user1", "password": "password1"}},
+                "byLogin": {"value": {"login": "user1", "password": "password1"}}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "OK (returns token and sets access_token cookie)"},
+          "400": {"description": "Bad Request"},
+          "401": {"description": "Unauthorized"}
+        }
+      }
+    },
+    "/api/users/register": {
+      "post": {
+        "summary": "Register user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {"type": "string"},
+                  "login": {"type": "string"},
+                  "password": {"type": "string"},
+                  "is_moderator": {"type": "boolean"}
+                },
+                "required": ["password"],
+                "anyOf": [
+                  {"required": ["username", "password"]},
+                  {"required": ["login", "password"]}
+                ]
+              },
+              "examples": {
+                "user": {"value": {"username": "user1", "password": "password1", "is_moderator": false}},
+                "moderator": {"value": {"username": "moderator1", "password": "modpass1", "is_moderator": true}}
+              }
+            }
+          }
+        },
+        "responses": {"201": {"description": "Created"}, "400": {"description": "Bad Request"}}
+      }
+    },
+    "/api/records": {
+      "get": {
+        "summary": "List records (auth)",
+        "security": [
+          {"bearerAuth": []},
+          {"cookieAuth": []}
+        ],
+        "responses": {"200": {"description": "OK"}, "401": {"description": "Unauthorized"}}
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "access_token"
+      }
+    }
+  }
+}

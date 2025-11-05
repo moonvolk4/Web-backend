@@ -1,0 +1,7 @@
+ServiceHost = "0.0.0.0"
+ServicePort = 8080
+JWTSecret = "dev-secret-change-me"
+JWTTTLMinutes = 60
+CookieName = "access_token"
+RedisAddr = "127.0.0.1:6379"
+RedisPassword = ""
